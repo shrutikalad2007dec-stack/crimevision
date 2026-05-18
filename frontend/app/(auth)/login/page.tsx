@@ -64,7 +64,7 @@ export default function LoginPage() {
         </form>
 
         <div className="mt-8 text-center text-sm text-cyber-muted">
-          Don't have an access clearance?{" "}
+          Don&apos;t have an access clearance?{" "}
           <Link href="/signup" className="text-cyber-accent hover:underline">Request Access</Link>
         </div>
       </div>
