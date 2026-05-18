@@ -16,7 +16,7 @@ export default function LoginPage() {
     setIsLoading(true);
     setMessage("");
 
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+    const apiUrl = "https://evidence-management-system-kd9i.onrender.com";
 
     try {
       const response = await fetch(`${apiUrl}/api/auth/login`, {
