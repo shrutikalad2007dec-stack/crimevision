@@ -24,12 +24,12 @@ const userSchema = mongoose.Schema(
     role: {
       type: String,
       enum: ['Admin', 'Officer'],
-      default: 'Officer',
+      default: 'Admin',
     },
     status: {
       type: String,
       enum: ['Pending', 'Approved', 'Suspended'],
-      default: 'Pending',
+      default: 'Approved',
     },
   },
   {
