@@ -3,6 +3,7 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const connectDB = require('./config/db.js');
 const authRoutes = require('./routes/authRoutes.js');
+const fingerprintRoutes = require('./routes/fingerprintRoutes.js');
 
 dotenv.config();
 
@@ -14,6 +15,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use('/api/auth', authRoutes);
+app.use('/api/fingerprints', fingerprintRoutes);
 
 app.get('/', (req, res) => {
   res.send('Forensic API is running...');
