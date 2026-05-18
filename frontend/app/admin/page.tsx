@@ -1,6 +1,6 @@
 import { Shield, Users, Database, ShieldAlert, BarChart } from "lucide-react";
 import Link from "next/link";
-import CyberCard from "../components/ui/CyberCard";
+import CyberCard from "../../components/ui/CyberCard";
 
 export default function AdminDashboard() {
   return (
