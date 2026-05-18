@@ -41,8 +41,8 @@ export default function SignupPage() {
       } else {
         setMessage(data.message || "Failed to submit request.");
       }
-    } catch (error) {
-      setMessage("Server connection error. Please try again later.");
+    } catch (error: any) {
+      setMessage(`ERROR: ${error.message || String(error)}. API URL is: ${apiUrl}`);
     } finally {
       setIsLoading(false);
     }
@@ -64,7 +64,7 @@ export default function SignupPage() {
         </div>
 
         {message && (
-          <div className={`mb-4 p-3 rounded text-center text-sm font-bold ${message.includes("Submitted") ? "bg-green-900/50 text-green-400 border border-green-500" : "bg-red-900/50 text-red-400 border border-red-500"}`}>
+          <div className={`mb-4 p-3 rounded text-center text-sm font-bold ${message.includes("Submitted") ? "bg-green-900/50 text-green-400 border border-green-500" : "bg-red-900/50 text-red-400 border border-red-500"}`} style={{ wordBreak: 'break-all' }}>
             {message}
           </div>
         )}
