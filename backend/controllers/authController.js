@@ -44,10 +44,6 @@ const authUser = async (req, res) => {
     const user = await User.findOne({ badgeNumber });
 
     if (user && (await user.matchPassword(password))) {
-      if (user.status === 'Pending') {
-        res.status(403).json({ message: 'Account pending admin approval' });
-        return;
-      }
       if (user.status === 'Suspended') {
         res.status(403).json({ message: 'Account suspended' });
         return;
