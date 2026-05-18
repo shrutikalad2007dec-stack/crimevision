@@ -1,132 +1,139 @@
 "use client";
-import { useState } from "react";
-import { Fingerprint, Upload, Search, CheckCircle, AlertTriangle } from "lucide-react";
+import { useState, useEffect } from "react";
 import CyberCard from "../../../components/ui/CyberCard";
+import { Fingerprint, Upload, Search, CheckCircle, AlertTriangle } from "lucide-react";
 
-export default function FingerprintModule() {
+export default function FingerprintsPage() {
+  const [fingerprints, setFingerprints] = useState<any[]>([]);
+  const [notes, setNotes] = useState("");
   const [isUploading, setIsUploading] = useState(false);
-  const [matchResult, setMatchResult] = useState<null | number>(null);
+  
+  const apiUrl = "https://evidence-management-system-kd9i.onrender.com";
 
-  const handleSimulatedUpload = (e: React.FormEvent) => {
-    e.preventDefault();
+  // Fetch real data on load
+  useEffect(() => {
+    fetchFingerprints();
+  }, []);
+
+  const fetchFingerprints = async () => {
+    try {
+      const res = await fetch(`${apiUrl}/api/fingerprints`);
+      const data = await res.json();
+      setFingerprints(data);
+    } catch (error) {
+      console.error("Error fetching fingerprints", error);
+    }
+  };
+
+  const handleUpload = async () => {
+    if (!notes) return alert("Please enter notes for this evidence!");
     setIsUploading(true);
-    setMatchResult(null);
-
-    // Simulate AI processing delay
-    setTimeout(() => {
+    
+    try {
+      await fetch(`${apiUrl}/api/fingerprints`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          uploadedBy: localStorage.getItem("userName") || "Admin",
+          notes: notes
+        }),
+      });
+      setNotes("");
+      fetchFingerprints(); // Refresh the list
+    } catch (error) {
+      console.error(error);
+    } finally {
       setIsUploading(false);
-      setMatchResult(98.7); // Simulated match percentage
-    }, 3000);
+    }
   };
 
   return (
-    <div className="space-y-6">
-      <div>
+    <div className="space-y-8">
+      <header className="mb-8">
         <h1 className="text-3xl font-bold text-white flex items-center">
-          <Fingerprint className="mr-3 w-8 h-8 text-cyber-accent" />
-          Biometric Analysis Module
+          <Fingerprint className="mr-3 text-cyber-accent" />
+          AFIS Database
         </h1>
-        <p className="text-cyber-muted mt-2">Upload, analyze, and cross-reference latent prints.</p>
-      </div>
+        <p className="text-cyber-muted mt-2">Upload and analyze biometric evidence using AI matching algorithms.</p>
+      </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Upload Form */}
-        <CyberCard>
-          <h2 className="text-xl font-bold text-white mb-4 border-b border-cyber-border pb-2">New Entry</h2>
-          <form onSubmit={handleSimulatedUpload} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs text-cyber-accent mb-1 uppercase tracking-widest">Case ID</label>
-                <input type="text" required className="w-full bg-cyber-dark border border-cyber-border rounded px-3 py-2 text-white focus:outline-none focus:border-cyber-accent" placeholder="e.g. CAS-409" />
-              </div>
-              <div>
-                <label className="block text-xs text-cyber-accent mb-1 uppercase tracking-widest">Suspect Name (Optional)</label>
-                <input type="text" className="w-full bg-cyber-dark border border-cyber-border rounded px-3 py-2 text-white focus:outline-none focus:border-cyber-accent" placeholder="Unknown" />
-              </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <CyberCard className="col-span-1 border-blue-500/30">
+          <h2 className="text-xl font-bold text-white flex items-center mb-6">
+            <Upload className="mr-2 text-cyber-accent" />
+            Upload Evidence
+          </h2>
+          <div className="space-y-4">
+            <div className="border-2 border-dashed border-cyber-border rounded-xl p-8 flex flex-col items-center justify-center text-center hover:border-cyber-accent hover:bg-cyber-accent/5 transition-colors cursor-pointer group">
+              <Upload className="w-12 h-12 text-cyber-muted group-hover:text-cyber-accent mb-4 transition-colors" />
+              <p className="text-white font-bold">Select Fingerprint Image</p>
+              <p className="text-xs text-cyber-muted mt-2">WSQ, PNG, or JPG up to 10MB</p>
             </div>
             
-            <div>
-              <label className="block text-xs text-cyber-accent mb-1 uppercase tracking-widest">Upload Print Image</label>
-              <div className="border-2 border-dashed border-cyber-border rounded-lg p-8 flex flex-col items-center justify-center bg-cyber-dark/50 hover:bg-cyber-dark transition-colors cursor-pointer group">
-                <Upload className="w-10 h-10 text-cyber-muted group-hover:text-cyber-accent transition-colors mb-2" />
-                <span className="text-sm text-cyber-muted group-hover:text-white transition-colors">Select highly detailed image (JPG/PNG)</span>
-              </div>
+            <div className="space-y-2">
+              <label className="text-xs text-cyber-muted uppercase tracking-widest">Case Notes / Description</label>
+              <input 
+                type="text" 
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                className="w-full bg-cyber-dark/50 border border-cyber-border rounded p-3 text-white focus:outline-none focus:border-cyber-accent" 
+                placeholder="e.g. Found on broken glass at scene..."
+              />
             </div>
-
+            
             <button 
-              type="submit" 
+              onClick={handleUpload}
               disabled={isUploading}
-              className={`w-full py-3 rounded font-bold text-cyber-dark flex items-center justify-center space-x-2 transition-all ${isUploading ? 'bg-cyber-muted cursor-not-allowed' : 'bg-cyber-accent hover:shadow-[0_0_15px_rgba(0,255,255,0.8)]'}`}
+              className={`w-full font-bold py-3 rounded text-cyber-dark transition-all ${isUploading ? 'bg-cyber-muted cursor-not-allowed' : 'bg-cyber-accent hover:shadow-[0_0_15px_rgba(0,255,255,0.8)]'}`}
             >
-              {isUploading ? (
-                <>
-                  <span className="animate-spin w-5 h-5 border-2 border-cyber-dark border-t-transparent rounded-full"></span>
-                  <span>ANALYZING BIOMETRICS...</span>
-                </>
-              ) : (
-                <>
-                  <Fingerprint className="w-5 h-5" />
-                  <span>RUN AI MATCH</span>
-                </>
-              )}
+              {isUploading ? "UPLOADING..." : "UPLOAD TO AFIS"}
             </button>
-          </form>
+          </div>
         </CyberCard>
 
-        {/* AI Results / Search */}
-        <CyberCard>
-          <h2 className="text-xl font-bold text-white mb-4 border-b border-cyber-border pb-2 flex justify-between">
-            <span>AI Analysis Result</span>
-            {matchResult !== null && <span className="text-green-400 text-sm flex items-center"><CheckCircle className="w-4 h-4 mr-1"/> Complete</span>}
-          </h2>
-
-          {isUploading && (
-            <div className="h-64 flex flex-col items-center justify-center space-y-4">
-              <div className="relative">
-                <Fingerprint className="w-20 h-20 text-cyber-accent opacity-50" />
-                <div className="absolute top-0 left-0 w-full h-full border-t-2 border-cyber-accent animate-bounce" style={{ animationDuration: '1s' }}></div>
+        <CyberCard className="col-span-1 lg:col-span-2">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-bold text-white flex items-center">
+              <Search className="mr-2 text-cyber-accent" />
+              Database Matches
+            </h2>
+          </div>
+          
+          <div className="space-y-4">
+            {fingerprints.length === 0 ? (
+              <div className="text-center p-8 text-cyber-muted border border-dashed border-cyber-border rounded">
+                No fingerprints in database. Upload one to start!
               </div>
-              <p className="text-cyber-accent animate-pulse font-mono tracking-widest text-sm">CROSS-REFERENCING AFIS DATABASE...</p>
-            </div>
-          )}
-
-          {!isUploading && matchResult === null && (
-            <div className="h-64 flex flex-col items-center justify-center text-cyber-muted text-center space-y-2">
-              <Search className="w-12 h-12 opacity-50" />
-              <p>Awaiting print submission for AI analysis.</p>
-            </div>
-          )}
-
-          {matchResult !== null && !isUploading && (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between p-4 bg-green-400/10 border border-green-400 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <Fingerprint className="w-10 h-10 text-green-400" />
-                  <div>
-                    <h3 className="font-bold text-white">Match Identified</h3>
-                    <p className="text-xs text-green-400">Suspect: John Doe (DOB: 1988)</p>
+            ) : (
+              fingerprints.map((fp) => (
+                <div key={fp._id} className="bg-cyber-dark/50 border border-cyber-border rounded p-4 flex flex-col md:flex-row justify-between items-center hover:border-cyber-accent/50 transition-colors">
+                  <div className="flex items-center mb-4 md:mb-0">
+                    <div className="w-12 h-12 bg-black rounded flex items-center justify-center mr-4 border border-cyber-border">
+                      <Fingerprint className="w-6 h-6 text-cyber-muted" />
+                    </div>
+                    <div>
+                      <div className="font-bold text-white">ID: {fp._id.substring(0, 8).toUpperCase()}</div>
+                      <div className="text-xs text-cyber-muted">Uploaded By: {fp.uploadedBy} • {new Date(fp.uploadDate).toLocaleDateString()}</div>
+                      <div className="text-sm text-gray-300 mt-1">"{fp.notes}"</div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center space-x-4">
+                    <div className="text-right">
+                      <div className="text-xs text-cyber-muted uppercase tracking-widest mb-1">AI Match Score</div>
+                      <div className={`text-xl font-bold ${fp.matchScore > 85 ? 'text-green-400' : 'text-yellow-400'}`}>
+                        {fp.matchScore}%
+                      </div>
+                    </div>
+                    <div className={`px-3 py-1 rounded text-xs font-bold flex items-center ${fp.status === 'Matched' ? 'bg-green-900/50 text-green-400' : 'bg-yellow-900/50 text-yellow-400'}`}>
+                      {fp.status === 'Matched' ? <CheckCircle className="w-3 h-3 mr-1" /> : <AlertTriangle className="w-3 h-3 mr-1" />}
+                      {fp.status.toUpperCase()}
+                    </div>
                   </div>
                 </div>
-                <div className="text-3xl font-extrabold text-green-400">{matchResult}%</div>
-              </div>
-
-              <div className="space-y-2">
-                <h4 className="text-sm font-bold text-white tracking-widest uppercase">Database Records</h4>
-                <div className="p-3 bg-cyber-dark border border-cyber-border rounded flex justify-between text-sm">
-                  <span className="text-cyber-muted">Prior Arrests</span>
-                  <span className="text-red-400">2 (Burglary, Grand Theft)</span>
-                </div>
-                <div className="p-3 bg-cyber-dark border border-cyber-border rounded flex justify-between text-sm">
-                  <span className="text-cyber-muted">Last Known Location</span>
-                  <span className="text-white">Sector 4, Neo-District</span>
-                </div>
-              </div>
-
-              <button className="w-full border border-cyber-accent text-cyber-accent py-2 rounded hover:bg-cyber-accent hover:text-cyber-dark transition-colors text-sm font-bold tracking-widest">
-                ATTACH TO CASE FILE
-              </button>
-            </div>
-          )}
+              ))
+            )}
+          </div>
         </CyberCard>
       </div>
     </div>
