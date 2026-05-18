@@ -20,7 +20,7 @@ export default function SignupPage() {
     setIsLoading(true);
     setMessage("");
 
-    const apiUrl = "https://evidence-management-system-kd9i.onrender.com";
+    const apiUrl = "https://forensic-evidence-management-system.onrender.com";
 
     try {
       const response = await fetch(`${apiUrl}/api/auth/register`, {
