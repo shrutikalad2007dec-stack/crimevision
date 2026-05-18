@@ -5,20 +5,53 @@ import { Shield, Lock } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
-  const [badgeId, setBadgeId] = useState("");
+  const [badgeNumber, setBadgeNumber] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState("");
   const router = useRouter();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate login for now
-    router.push("/dashboard");
+    setIsLoading(true);
+    setMessage("");
+
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
+    try {
+      const response = await fetch(`${apiUrl}/api/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ badgeNumber, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("userRole", data.role);
+        localStorage.setItem("userName", data.name);
+        
+        if (data.role === "Admin") {
+          router.push("/admin");
+        } else {
+          router.push("/dashboard");
+        }
+      } else {
+        setMessage(data.message || "Invalid credentials.");
+      }
+    } catch (error) {
+      setMessage("Server connection error. Please try again later.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-cyber-gradient flex items-center justify-center p-4">
       <div className="w-full max-w-md glass-panel p-8 rounded-2xl relative overflow-hidden">
-        {/* Glow effect */}
         <div className="absolute -top-20 -right-20 w-40 h-40 bg-cyber-accent rounded-full filter blur-[80px] opacity-20"></div>
 
         <div className="flex flex-col items-center mb-8">
@@ -29,6 +62,12 @@ export default function LoginPage() {
           <p className="text-sm text-cyber-muted mt-2">Authorized Personnel Only</p>
         </div>
 
+        {message && (
+          <div className="mb-4 p-3 rounded text-center text-sm font-bold bg-red-900/50 text-red-400 border border-red-500">
+            {message}
+          </div>
+        )}
+
         <form onSubmit={handleLogin} className="space-y-6 relative z-10">
           <div>
             <label className="block text-xs font-semibold text-cyber-accent mb-2 tracking-widest uppercase">Badge Number</label>
@@ -36,8 +75,8 @@ export default function LoginPage() {
               type="text" 
               className="w-full bg-cyber-dark/50 border border-cyber-border rounded-lg px-4 py-3 text-white focus:outline-none focus:border-cyber-accent focus:neon-glow transition-all"
               placeholder="e.g. 9942"
-              value={badgeId}
-              onChange={(e) => setBadgeId(e.target.value)}
+              value={badgeNumber}
+              onChange={(e) => setBadgeNumber(e.target.value)}
               required
             />
           </div>
@@ -56,10 +95,11 @@ export default function LoginPage() {
 
           <button 
             type="submit" 
-            className="w-full bg-cyber-accent text-cyber-dark font-bold py-3 rounded-lg hover:shadow-[0_0_15px_rgba(0,255,255,0.8)] flex items-center justify-center space-x-2 transition-all"
+            disabled={isLoading}
+            className={`w-full text-cyber-dark font-bold py-3 rounded-lg flex items-center justify-center space-x-2 transition-all ${isLoading ? 'bg-cyber-muted cursor-not-allowed' : 'bg-cyber-accent hover:shadow-[0_0_15px_rgba(0,255,255,0.8)]'}`}
           >
             <Lock className="w-5 h-5" />
-            <span>AUTHENTICATE</span>
+            <span>{isLoading ? "AUTHENTICATING..." : "AUTHENTICATE"}</span>
           </button>
         </form>
 
